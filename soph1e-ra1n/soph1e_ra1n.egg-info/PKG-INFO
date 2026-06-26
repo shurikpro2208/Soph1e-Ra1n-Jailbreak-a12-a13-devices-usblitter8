@@ -1,0 +1,152 @@
+Metadata-Version: 2.4
+Name: soph1e-ra1n
+Version: 1.0.0
+Summary: A12/A13 BootROM exploit + jailbreak tool (soph1e ra1n)
+Author: soph1e-ra1n contributors
+License: MIT
+Project-URL: Homepage, https://github.com/prdgmshift/usbliter8
+Project-URL: Source, https://github.com/prdgmshift/usbliter8
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: pyusb>=1.2.0
+Requires-Dist: customtkinter>=5.2.0
+Provides-Extra: cli
+Requires-Dist: rich>=13.0.0; extra == "cli"
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0.0; extra == "dev"
+Requires-Dist: ruff>=0.5.0; extra == "dev"
+
+# usbliter8 Payload Injector
+
+> **checkra1n/palera1n-style** payload injector + full jailbreak tool for the `usbliter8` SecureROM exploit (A12/A13).
+
+```
+                    __    __    __  __       __
+     |  |  |  |  | |  \  |  \  |  \ |  |  | |  \
+     |  |--|  |  | |  |  |  |  |  | |  |  | |  |
+     |  |  |  |__| |__/  |__/  |__/ \__|__/ |__/
+  __      __   __   __              __       __
+  |  \  / |  \ |  \ |  \  |  |  | |  \    |  \
+  |  |  |  |  | |  | |  |  |  |  | |  |    |  |
+  |__/   |  |__| |__/ |__/  \__|__| |__/ __|__/
+```
+
+Based on the research by **Paradigm Shift** ([usbliter8 PoC](https://github.com/prdgmshift/usbliter8) | [write-up](https://ps.tc/pages/blog-usbliter8.html))
+
+## What is usbliter8?
+
+`usbliter8` is an **unpatchable BootROM exploit** for Apple A12/S4/S5 and A13 SoCs. Like `checkm8`, it exploits a hardware bug in the USB controller and cannot be fixed via software update.
+
+## Project Structure
+
+```
+soph1e-ra1n/
+├── soph1e_ra1n/          # Host-side tool (Python)
+│   ├── gui/app.py               # checkra1n-style desktop GUI
+│   ├── cli/main.py              # CLI with 12 commands
+│   ├── cli/tui.py               # Interactive terminal UI
+│   └── core/                    # Exploit, board, device logic
+├── device/                       # Device-side (iOS post-jailbreak)
+│   ├── loader/                  # Loader app (SwiftUI Xcode project)
+│   ├── bootstrap/               # Bootstrap package (APT sources, scripts)
+│   └── scripts/                 # Build & deployment scripts
+└── firmware/                    # Pre-built RP2350 UF2 files
+```
+
+## GUI (checkra1n-style)
+
+```
+soph1e-ra1n gui
+```
+
+- **Device pane**: Live status of iDevice + RP2350 board
+- **Flash button**: One-click firmware flash to RP2350
+- **DFU guide**: Built-in DFU mode instructions
+- **Exploit button**: Full exploit workflow with progress bar
+- **Post-exploit buttons**: Demote, Boot iBoot, Install Loader
+- **Settings panel**: Timeouts, auto-flash, auto-detect, firmware path
+- **Console output**: Real-time log window
+- **About section**: Device compat info
+
+## CLI (palera1n-style)
+
+```bash
+soph1e-ra1n tui          # Interactive terminal UI
+soph1e-ra1n gui          # Desktop GUI
+soph1e-ra1n exploit      # Run exploit workflow
+soph1e-ra1n jailbreak    # Full jailbreak (exploit + bootstrap + loader)
+soph1e-ra1n demote       # Demote production mode
+soph1e-ra1n boot <file>  # Boot raw iBoot image
+soph1e-ra1n status       # Show device status
+soph1e-ra1n board        # Show RP2350 board info
+soph1e-ra1n flash        # Flash RP2350 firmware
+soph1e-ra1n fetch-firmware  # Download latest UF2
+soph1e-ra1n build-loader     # Build device-side loader app
+soph1e-ra1n build-bootstrap  # Build bootstrap package
+```
+
+## Device-Side Loader App
+
+After jailbreaking, a **Loader app** appears on the home screen with:
+
+- **Package manager installer**: One-tap install Sileo, Zebra, or Cydia
+- **Bootstrap management**: Reinstall/bootstrap repair
+- **System info**: Kernel version, bootchain status, exploit type
+- **Tool launchers**: Launch unc0ver, Taurine, etc.
+
+## Complete Jailbreak Workflow
+
+```
+Host PC                     RP2350 Board                iPhone/iPad
+─────────                   ────────────                ──────────
+   │                             │                          │
+   ├── Flash firmware ──────────►│                          │
+   │                             │                          │
+   │◄──── Instructions to DFU ───│                          │
+   │                             │◄── Device in DFU ────────┤
+   │                             │                          │
+   │                             ├── Run exploit ──────────►│
+   │                             │  (0.7-1.2s)              │
+   │◄──── PWND! Replug to PC ────│                          │
+   │                             │                          │
+   ├── Demote production ────────│─────────────────────────►│
+   ├── Boot custom iBoot ────────│─────────────────────────►│
+   ├── Install bootstrap ────────│─────────────────────────►│
+   ├── Deploy Loader app ────────│─────────────────────────►│
+   │                             │                          │
+   │                             │           Loader app on  │
+   │                             │           home screen!   │
+```
+
+## Hardware Requirements
+
+- **RP2350 board**: Waveshare RP2350 USB-A (recommended), Pico 2, TINY2350
+- **Lightning to USB-A cable** (no USB-C)
+- **Vulnerable device**: iPhone XR/XS/11 series, iPad Air 3/mini 5/8/9, Apple Watch S4/S5, HomePod mini
+
+## Software Requirements
+
+- Python 3.10+
+- `pip install customtkinter pyusb` (for GUI)
+- Theos (for building loader app on macOS)
+
+## Quick Start
+
+```bash
+# Install
+pip install -e .
+pip install customtkinter
+
+# Fetch firmware from GitHub
+soph1e-ra1n fetch-firmware
+
+# Connect RP2350 (hold BOOTSEL), then:
+soph1e-ra1n flash
+
+# Launch GUI
+soph1e-ra1n gui
+```
+
+## License
+
+Based on usbliter8 by Paradigm Shift. MIT.
